@@ -23,13 +23,11 @@ func Handler(secret string, l logger.Logger, fn WebHookHandler) http.HandlerFunc
 			util.Response(w, 405, "Method Not Allowed")
 			return
 		}
-		event := r.Header.Get("x-github-event")
-		delivery := r.Header.Get("x-github-delivery")
-		signature := r.Header.Get("x-hub-signature")
+		fmt.Println(r.Header)
+		event := r.Header.Get("x-gitlab-event")
+		token := r.Header.Get("x-gitlab-token")
 		contentType := r.Header.Get("Content-Type")
-		log.Verbose("x-github-event:%s\nx-github-delivery:%s\nx-hub-signature:%s\nContent-Type:%s\n",
-			event, delivery, signature, contentType)
-		//log.Printf("event:%s, delivery:%s, sign:%s \n", event, delivery, signature)
+		log.Printf("event:%s, token:%s, contentType:%s \n", event, token, contentType)
 		// Utility funcs
 		_fail := func(err error) {
 			fail(w, event, err)
@@ -39,14 +37,8 @@ func Handler(secret string, l logger.Logger, fn WebHookHandler) http.HandlerFunc
 		}
 
 		// Ensure headers are all there
-		if event == "" || delivery == "" {
-			_fail(fmt.Errorf("missing x-github-* and x-hub-* headers"))
-			return
-		}
-
-		// No secret provided to github
-		if signature == "" && secret != "" {
-			_fail(fmt.Errorf("GitHub isn't providing a signature, whilst a secret is being used (please give github's webhook the secret)"))
+		if event == "" || token == "" {
+			_fail(fmt.Errorf("missing x-gitlab-event and x-gitlab-token headers"))
 			return
 		}
 
@@ -60,12 +52,9 @@ func Handler(secret string, l logger.Logger, fn WebHookHandler) http.HandlerFunc
 		fmt.Println("body", string(body))
 		log.Verbose("RequestBody:%s\n", string(body))
 		// Validate payload (only when secret is provided)
-		if secret != "" {
-			if err := validePayloadSignature(secret, signature, body); err != nil {
-				// Valied validation
-				_fail(err)
-				return
-			}
+		if secret != token {
+			_fail(fmt.Errorf("token can not match"))
+			return
 		}
 		repo := GitHubRepo{}
 		result := gjson.ParseBytes(body)

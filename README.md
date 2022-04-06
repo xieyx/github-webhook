@@ -27,11 +27,11 @@ chmod u+x /usr/local/sbin/gitlab-webhook
 
 run script
 ```
-/usr/bin/gitlab-webhook --bash /home/sh/test.sh
+/usr/local/sbin/gitlab-webhook --bash /home/sh/test.sh
 ```
 
 ## 3. Command
-- Daemonize run:  `nohup gitlab-webhook --bash /home/my.sh --secret mysecret -q &`  后台运行
+- Daemonize run:  `nohup gitlab-webhook --bash /home/my.sh --secret mysecret -q &`
 - Monitor run: `gitlab-webhook --bash /home/my.sh --secret mysecret`
 - Quiet mode run: `gitlab-webhook --bash /home/my.sh --secret mysecret --quiet`
 - Custom port mode run: `gitlab-webhook --bash /home/my.sh --secret mysecret --port 6100 --quiet`
